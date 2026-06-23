@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reportes de altas · BIM — Jaramillo Mora</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    --rojo:#e1251b;--rojo-d:#b51d15;--negro:#1a1a1a;--gris-t:#6b6b6b;--muted:#8a8a8a;
+    --linea:#e7e7e7;--bg:#f4f4f4;--card:#ffffff;--ok:#1a8f3c;--okbg:#e9f7ee;
+    --err:#d12b20;--errbg:#fdeceb;--radius:14px;--shadow:0 1px 3px rgba(0,0,0,.06),0 8px 24px rgba(0,0,0,.04);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--negro);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px 80px}
+
+  .topbar{background:var(--negro);color:#fff;border-bottom:3px solid var(--rojo)}
+  .topbar-in{max-width:1180px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+  .logo-jm{height:30px;width:auto;filter:invert(1);display:block}
+  .logo-bim{height:38px;width:auto;border-radius:6px;display:block}
+  .brand-divider{width:1px;height:32px;background:rgba(255,255,255,.2)}
+  .topbar h1{font-size:16px;font-weight:600;margin:0}
+  .topbar .sub{font-size:12.5px;color:rgba(255,255,255,.6);margin-top:1px}
+  .topbar-right{margin-left:auto}
+  .nav-link{color:rgba(255,255,255,.85);text-decoration:none;font-size:13px;font-weight:500;padding:7px 14px;border:1px solid rgba(255,255,255,.25);border-radius:8px;transition:all .15s}
+  .nav-link:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.45);color:#fff}
+
+  /* Login */
+  .login{max-width:420px;margin:80px auto;background:var(--card);border:1px solid var(--linea);border-radius:var(--radius);padding:36px 34px;box-shadow:var(--shadow);text-align:center}
+  .login .lock{width:54px;height:54px;border-radius:50%;background:var(--errbg);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:24px}
+  .login h2{margin:0 0 6px;font-size:19px}
+  .login p{color:var(--gris-t);font-size:13.5px;margin:0 0 22px}
+  .login input{width:100%;padding:12px 14px;border:1px solid var(--linea);border-radius:10px;font-size:15px;outline:none;text-align:center;letter-spacing:1px}
+  .login input:focus{border-color:var(--rojo)}
+  .login button{width:100%;margin-top:14px;background:var(--rojo);color:#fff;border:none;padding:13px;border-radius:10px;font-size:15px;font-weight:650;cursor:pointer;box-shadow:0 4px 14px rgba(225,37,27,.28)}
+  .login button:hover{background:var(--rojo-d)}
+  .login .err{color:var(--err);font-size:13px;margin-top:12px;min-height:18px}
+
+  /* Dashboard */
+  .dash{display:none}
+  .dash.show{display:block}
+  h2.section{font-size:15px;margin:30px 0 14px;font-weight:650;color:var(--negro)}
+
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:26px}
+  .kpi{background:var(--card);border:1px solid var(--linea);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow)}
+  .kpi .v{font-size:30px;font-weight:750;line-height:1}
+  .kpi .l{font-size:12.5px;color:var(--gris-t);margin-top:6px;font-weight:550}
+  .kpi.rojo .v{color:var(--rojo)}
+  .kpi.ok .v{color:var(--ok)}
+  .kpi.err .v{color:var(--err)}
+
+  .charts{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .chart-card{background:var(--card);border:1px solid var(--linea);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow)}
+  .chart-card h3{font-size:14px;margin:0 0 16px;font-weight:650}
+  .chart-card.full{grid-column:1 / -1}
+  .chart-wrap{position:relative;height:280px}
+  .chart-wrap.tall{height:360px}
+
+  /* Tabla */
+  .table-tools{display:flex;gap:12px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+  .table-tools input{flex:1;min-width:220px;padding:10px 13px;border:1px solid var(--linea);border-radius:9px;font-size:14px;outline:none}
+  .table-tools input:focus{border-color:var(--rojo)}
+  .btn{border:1px solid var(--linea);background:#fff;color:var(--negro);padding:9px 15px;border-radius:9px;cursor:pointer;font-size:13px;font-weight:550;white-space:nowrap}
+  .btn:hover{border-color:#c9c9c9;background:#fafafa}
+  .tablebox{background:var(--card);border:1px solid var(--linea);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  table.log{width:100%;border-collapse:collapse;font-size:13px}
+  table.log th{text-align:left;background:#fafafa;padding:12px 14px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--linea);position:sticky;top:0}
+  table.log td{padding:11px 14px;border-bottom:1px solid #f4f4f4}
+  table.log tr:last-child td{border-bottom:none}
+  table.log tr:hover td{background:#fafafa}
+  .tag{font-size:11px;font-weight:700;padding:2px 9px;border-radius:6px;display:inline-block}
+  .tag.ok{background:var(--okbg);color:var(--ok)}
+  .tag.err{background:var(--errbg);color:var(--err)}
+  .tag.plat{background:#eef1f6;color:#4a5568}
+  .muted{color:var(--muted)}
+  .scroll{max-height:560px;overflow-y:auto}
+  .empty{padding:50px 20px;text-align:center;color:var(--muted)}
+  .footer{text-align:center;margin-top:50px;font-size:12px;color:var(--muted)}
+  .spin{width:18px;height:18px;border:2px solid #ddd;border-top-color:var(--rojo);border-radius:50%;display:inline-block;animation:sp .7s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  @media(max-width:760px){.kpis{grid-template-columns:repeat(2,1fr)}.charts{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-in">
+      <img src="/logo-jaramillo.png" class="logo-jm" alt="Jaramillo Mora">
+      <div class="brand-divider"></div>
+      <img src="/logo-bim.jpg" class="logo-bim" alt="BIM">
+      <div>
+        <h1>Reportes de altas · Equipo BIM</h1>
+        <div class="sub">Trazabilidad de usuarios agregados a proyectos</div>
+      </div>
+      <div class="topbar-right">
+        <a href="/" class="nav-link">← Volver a altas</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- Login -->
+    <div class="login" id="login">
+      <div class="lock">🔒</div>
+      <h2>Acceso restringido</h2>
+      <p>Esta sección es solo para el equipo BIM. Ingresa la contraseña compartida.</p>
+      <input type="password" id="pwd" placeholder="Contraseña" autocomplete="current-password">
+      <button id="loginBtn">Entrar</button>
+      <div class="err" id="loginErr"></div>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="dash" id="dash">
+
+      <div class="kpis">
+        <div class="kpi rojo"><div class="v" id="kTotal">0</div><div class="l">Altas totales</div></div>
+        <div class="kpi ok"><div class="v" id="kOk">0</div><div class="l">Exitosas</div></div>
+        <div class="kpi"><div class="v" id="kPersonas">0</div><div class="l">Personas distintas</div></div>
+        <div class="kpi"><div class="v" id="kProyectos">0</div><div class="l">Proyectos distintos</div></div>
+      </div>
+
+      <h2 class="section">Indicadores</h2>
+      <div class="charts">
+        <div class="chart-card">
+          <h3>Altas por día (últimos 30)</h3>
+          <div class="chart-wrap"><canvas id="chartDia"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <h3>Por plataforma</h3>
+          <div class="chart-wrap"><canvas id="chartPlat"></canvas></div>
+        </div>
+        <div class="chart-card full">
+          <h3>Altas por función</h3>
+          <div class="chart-wrap tall"><canvas id="chartFunc"></canvas></div>
+        </div>
+      </div>
+
+      <h2 class="section">Listado detallado</h2>
+      <div class="table-tools">
+        <input type="text" id="filtro" placeholder="Buscar por persona, función, proyecto…">
+        <button class="btn" id="btnCsv">Exportar CSV</button>
+        <button class="btn" id="btnReload">↻ Actualizar</button>
+      </div>
+      <div class="tablebox">
+        <div class="scroll">
+          <table class="log">
+            <thead><tr>
+              <th>Fecha</th><th>Persona</th><th>Correo</th><th>Función</th>
+              <th>Proyecto</th><th>Plataforma</th><th>Módulos</th><th>Resultado</th>
+            </tr></thead>
+            <tbody id="logBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="footer">Constructora Jaramillo Mora S.A. · Reportes internos BIM</div>
+  </div>
+
+<script>
+let DATA = { altas: [], stats: null };
+let charts = {};
+let currentPwd = '';
+
+const $ = id => document.getElementById(id);
+
+$('loginBtn').addEventListener('click', doLogin);
+$('pwd').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+async function doLogin() {
+  const pwd = $('pwd').value.trim();
+  if (!pwd) return;
+  $('loginErr').textContent = '';
+  $('loginBtn').innerHTML = '<span class="spin"></span>';
+  try {
+    const r = await fetch('/api/reportes', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ password: pwd })
+    });
+    const d = await r.json();
+    if (!r.ok) { $('loginErr').textContent = d.detail || 'Contraseña incorrecta'; $('loginBtn').textContent = 'Entrar'; return; }
+    currentPwd = pwd;
+    DATA = { altas: d.altas || [], stats: d.stats };
+    $('login').style.display = 'none';
+    $('dash').classList.add('show');
+    renderAll();
+  } catch(e) {
+    $('loginErr').textContent = 'Error de conexión.';
+    $('loginBtn').textContent = 'Entrar';
+  }
+}
+
+async function reload() {
+  if (!currentPwd) return;
+  try {
+    const r = await fetch('/api/reportes', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ password: currentPwd })
+    });
+    const d = await r.json();
+    if (r.ok) { DATA = { altas: d.altas || [], stats: d.stats }; renderAll(); }
+  } catch(e) {}
+}
+$('btnReload').addEventListener('click', reload);
+
+function renderAll() {
+  const t = DATA.stats?.totales || {};
+  $('kTotal').textContent = (t.exitosas || 0) + (t.fallidas || 0);
+  $('kOk').textContent = t.exitosas || 0;
+  $('kPersonas').textContent = t.personas || 0;
+  $('kProyectos').textContent = t.proyectos || 0;
+  renderCharts();
+  renderTable();
+}
+
+function renderCharts() {
+  const rojo = '#e1251b', negro = '#1a1a1a', gris = '#c9c9c9';
+  Object.values(charts).forEach(c => c && c.destroy());
+
+  // Por día
+  const dia = [...(DATA.stats?.porDia || [])].reverse();
+  charts.dia = new Chart($('chartDia'), {
+    type: 'line',
+    data: { labels: dia.map(x=>x.dia.slice(5)), datasets: [{ label:'Altas', data: dia.map(x=>x.total), borderColor: rojo, backgroundColor:'rgba(225,37,27,.1)', fill:true, tension:.3, pointRadius:3, pointBackgroundColor: rojo }] },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{precision:0}}} }
+  });
+
+  // Plataforma
+  const plat = DATA.stats?.porPlataforma || [];
+  const platLabel = p => p === 'bim360' ? 'BIM 360' : (p === 'acc' ? 'ACC' : (p||'—'));
+  charts.plat = new Chart($('chartPlat'), {
+    type: 'doughnut',
+    data: { labels: plat.map(x=>platLabel(x.plataforma)), datasets: [{ data: plat.map(x=>x.total), backgroundColor:[rojo, negro, gris] }] },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}} }
+  });
+
+  // Función (horizontal bar)
+  const func = (DATA.stats?.porFuncion || []).slice(0, 20);
+  charts.func = new Chart($('chartFunc'), {
+    type: 'bar',
+    data: { labels: func.map(x=>x.funcion), datasets: [{ label:'Personas', data: func.map(x=>x.total), backgroundColor: rojo, borderRadius:4 }] },
+    options: { indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{beginAtZero:true,ticks:{precision:0}}} }
+  });
+}
+
+function fmtFecha(iso) {
+  const d = new Date(iso);
+  if (isNaN(d)) return iso;
+  return d.toLocaleString('es-CO', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+function renderTable() {
+  const f = $('filtro').value.trim().toLowerCase();
+  const rows = DATA.altas.filter(a => !f ||
+    (a.nombre||'').toLowerCase().includes(f) ||
+    (a.email||'').toLowerCase().includes(f) ||
+    (a.funcion||'').toLowerCase().includes(f) ||
+    (a.proyecto_nombre||'').toLowerCase().includes(f));
+  const body = $('logBody');
+  if (!rows.length) { body.innerHTML = '<tr><td colspan="8"><div class="empty">Sin registros.</div></td></tr>'; return; }
+  body.innerHTML = rows.map(a => {
+    const plat = a.plataforma === 'bim360' ? 'BIM 360' : (a.plataforma === 'acc' ? 'ACC' : (a.plataforma||'—'));
+    const ok = a.resultado === 'OK';
+    return `<tr>
+      <td class="muted">${esc(fmtFecha(a.fecha))}</td>
+      <td>${esc(a.nombre||'—')}</td>
+      <td class="muted">${esc(a.email)}</td>
+      <td>${esc(a.funcion||'—')}</td>
+      <td>${esc(a.proyecto_nombre||a.proyecto_id)}</td>
+      <td><span class="tag plat">${esc(plat)}</span></td>
+      <td class="muted">${esc(a.modulos||'—')}</td>
+      <td><span class="tag ${ok?'ok':'err'}">${ok?'OK':'Error'}</span>${ok?'':'<div class="muted" style="font-size:11px;margin-top:3px">'+esc((a.detalle||'').slice(0,60))+'</div>'}</td>
+    </tr>`;
+  }).join('');
+}
+$('filtro').addEventListener('input', renderTable);
+
+// Export CSV
+$('btnCsv').addEventListener('click', () => {
+  const headers = ['Fecha','Persona','Correo','Funcion','Proyecto','Plataforma','Modulos','Resultado','Detalle'];
+  const lines = [headers.join(',')];
+  for (const a of DATA.altas) {
+    const row = [fmtFecha(a.fecha), a.nombre||'', a.email||'', a.funcion||'', a.proyecto_nombre||a.proyecto_id||'', a.plataforma||'', a.modulos||'', a.resultado||'', (a.detalle||'').replace(/[\r\n]+/g,' ')];
+    lines.push(row.map(v => '"' + String(v).replace(/"/g,'""') + '"').join(','));
+  }
+  const blob = new Blob(['\ufeff' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'altas_jaramillomora_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click(); URL.revokeObjectURL(url);
+});
+</script>
+</body>
+</html>

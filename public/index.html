@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Altas de personas · ACC / BIM 360 — Jaramillo Mora</title>
+<style>
+  :root{
+    --rojo:#e1251b;        /* rojo Jaramillo Mora */
+    --rojo-d:#b51d15;
+    --negro:#1a1a1a;
+    --gris-t:#6b6b6b;
+    --muted:#8a8a8a;
+    --linea:#e7e7e7;
+    --bg:#f4f4f4;
+    --card:#ffffff;
+    --ok:#1a8f3c;
+    --okbg:#e9f7ee;
+    --err:#d12b20;
+    --errbg:#fdeceb;
+    --warn:#b9770a;
+    --warnbg:#fff5e6;
+    --radius:14px;
+    --shadow:0 1px 3px rgba(0,0,0,.06),0 8px 24px rgba(0,0,0,.04);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--negro);line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px 80px}
+
+  /* ─── Topbar ─── */
+  .topbar{
+    background:var(--negro);color:#fff;border-bottom:3px solid var(--rojo);
+  }
+  .topbar-in{
+    max-width:1080px;margin:0 auto;padding:14px 24px;
+    display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  }
+  .logo-jm{height:30px;width:auto;filter:invert(1);display:block}
+  .logo-bim{height:38px;width:auto;border-radius:6px;display:block}
+  .brand-divider{width:1px;height:32px;background:rgba(255,255,255,.2)}
+  .topbar h1{font-size:16px;font-weight:600;margin:0;letter-spacing:.2px}
+  .topbar .sub{font-size:12.5px;color:rgba(255,255,255,.6);margin-top:1px}
+  .topbar-right{margin-left:auto;display:flex;align-items:center;gap:14px}
+  .nav-link{
+    color:rgba(255,255,255,.85);text-decoration:none;font-size:13px;font-weight:500;
+    padding:7px 14px;border:1px solid rgba(255,255,255,.25);border-radius:8px;
+    transition:all .15s;
+  }
+  .nav-link:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.45);color:#fff}
+  .status{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:rgba(255,255,255,.85)}
+  .dot{width:9px;height:9px;border-radius:50%;background:#999;flex:none}
+  .dot.ok{background:#3ad07a;box-shadow:0 0 0 3px rgba(58,208,122,.2)}
+  .dot.bad{background:#ff5a4d;box-shadow:0 0 0 3px rgba(255,90,77,.2)}
+  .dot.warn{background:#ffb020;box-shadow:0 0 0 3px rgba(255,176,32,.2)}
+
+  /* ─── Meta strip ─── */
+  .meta{
+    background:#fff;border-bottom:1px solid var(--linea);
+    font-size:12.5px;color:var(--gris-t);
+  }
+  .meta-in{max-width:1080px;margin:0 auto;padding:9px 24px;display:flex;gap:22px;flex-wrap:wrap}
+  .meta b{color:var(--negro);font-weight:600}
+  .meta code{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;background:#f3f3f3;padding:1px 6px;border-radius:5px}
+
+  /* ─── Steps ─── */
+  .step{display:flex;gap:18px;margin-top:26px}
+  .stepno{flex:none;width:34px;display:flex;flex-direction:column;align-items:center;padding-top:22px}
+  .stepno .n{
+    width:30px;height:30px;border-radius:50%;background:var(--rojo);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;
+    box-shadow:0 2px 8px rgba(225,37,27,.3);
+  }
+  .card{
+    flex:1;background:var(--card);border:1px solid var(--linea);border-radius:var(--radius);
+    padding:22px 24px;box-shadow:var(--shadow);
+  }
+  .card h2{font-size:16px;margin:0 0 3px;font-weight:650}
+  .hint{font-size:13px;color:var(--gris-t);margin:0 0 16px}
+
+  /* ─── Proyectos ─── */
+  .proj-toolbar{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+  .proj-toolbar input{
+    flex:1;min-width:200px;padding:10px 13px;border:1px solid var(--linea);border-radius:9px;
+    font-size:14px;outline:none;transition:border .15s;
+  }
+  .proj-toolbar input:focus{border-color:var(--rojo)}
+  .btn{
+    border:1px solid var(--linea);background:#fff;color:var(--negro);
+    padding:9px 15px;border-radius:9px;cursor:pointer;font-size:13px;font-weight:550;
+    transition:all .15s;white-space:nowrap;
+  }
+  .btn:hover{border-color:#c9c9c9;background:#fafafa}
+  .pill{margin-left:auto;font-size:12.5px;color:var(--gris-t);background:#f5f5f5;padding:6px 13px;border-radius:20px;font-weight:550}
+
+  .proj-list{max-height:300px;overflow-y:auto;border:1px solid var(--linea);border-radius:11px}
+  .proj{
+    display:flex;align-items:center;gap:12px;padding:11px 15px;cursor:pointer;
+    border-bottom:1px solid #f2f2f2;transition:background .12s;
+  }
+  .proj:last-child{border-bottom:none}
+  .proj:hover{background:#fafafa}
+  .proj.sel{background:#fdeceb}
+  .proj input{width:17px;height:17px;accent-color:var(--rojo);flex:none;cursor:pointer}
+  .pname{font-weight:550;font-size:14px}
+  .pcity{margin-left:auto;font-size:12px;color:var(--muted)}
+  .proj-loading{padding:22px 16px;text-align:center;color:var(--gris-t);font-size:13.5px}
+  .reload-btn{margin-left:8px;border:1px solid var(--linea);background:#fff;padding:5px 11px;border-radius:7px;cursor:pointer;font-size:12.5px}
+
+  /* ─── Personas ─── */
+  table.people{width:100%;border-collapse:collapse}
+  table.people th{
+    text-align:left;font-size:11px;font-weight:700;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.6px;padding:0 10px 9px;
+  }
+  table.people td{padding:6px 10px;vertical-align:top}
+  table.people td.x{width:46px;text-align:center}
+  .emp-wrap,.role-wrap{position:relative}
+  .pe-search,.pr-search{
+    width:100%;padding:10px 13px;border:1px solid var(--linea);border-radius:9px;
+    font-size:14px;outline:none;transition:border .15s;
+  }
+  .pe-search:focus,.pr-search:focus{border-color:var(--rojo)}
+  .emp-dropdown,.role-dropdown{
+    position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:30;
+    background:#fff;border:1px solid var(--linea);border-radius:10px;
+    box-shadow:0 8px 28px rgba(0,0,0,.12);max-height:260px;overflow-y:auto;
+  }
+  .emp-opt,.role-opt{padding:10px 13px;cursor:pointer;font-size:13.5px;border-bottom:1px solid #f4f4f4}
+  .emp-opt:last-child,.role-opt:last-child{border-bottom:none}
+  .emp-opt:hover,.role-opt:hover{background:#fdeceb}
+  .emp-opt{display:flex;flex-direction:column;gap:1px}
+  .emp-name{font-weight:550}
+  .emp-mail{font-size:11.5px;color:var(--muted)}
+  .role-clear{color:var(--muted);font-style:italic}
+
+  .user-status{display:inline-block;margin-top:6px;font-size:11.5px;font-weight:600;padding:2px 9px;border-radius:20px}
+  .us-ok{color:var(--ok);background:var(--okbg)}
+  .us-block{color:var(--err);background:var(--errbg)}
+  .us-loading{color:var(--muted);background:#f3f3f3}
+
+  .iconbtn{
+    width:32px;height:32px;border:1px solid var(--linea);background:#fff;border-radius:8px;
+    cursor:pointer;font-size:17px;color:var(--muted);line-height:1;transition:all .15s;
+  }
+  .iconbtn:hover{border-color:var(--err);color:var(--err);background:var(--errbg)}
+  .addperson{margin-top:8px}
+
+  .bulk-toggle{margin-top:14px;font-size:13px;color:var(--rojo);cursor:pointer;user-select:none;font-weight:550}
+  .bulk-box{margin-top:10px;display:none}
+  .bulk-box.show{display:block}
+  .bulk-box textarea{
+    width:100%;min-height:78px;padding:11px 13px;border:1px solid var(--linea);border-radius:10px;
+    font-size:13px;font-family:inherit;outline:none;resize:vertical;
+  }
+  .bulk-box textarea:focus{border-color:var(--rojo)}
+
+  /* ─── Resumen y envío ─── */
+  .summary{display:flex;gap:26px;flex-wrap:wrap;padding:4px 0 18px;font-size:13.5px;color:var(--gris-t)}
+  .summary b{color:var(--negro);font-size:17px;font-weight:700;margin-right:3px}
+  .submitbar{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .btn.go{
+    background:var(--rojo);color:#fff;border:none;padding:13px 26px;font-size:14.5px;font-weight:650;
+    border-radius:10px;box-shadow:0 4px 14px rgba(225,37,27,.28);
+  }
+  .btn.go:hover:not(:disabled){background:var(--rojo-d)}
+  .btn.go:disabled{background:#d8d8d8;color:#fff;box-shadow:none;cursor:not-allowed}
+
+  .warnline{margin-top:14px;font-size:13px;color:var(--warn);background:var(--warnbg);padding:11px 14px;border-radius:9px;border:1px solid #f3e2bf}
+  .err-text{margin-top:12px;font-size:13px;color:var(--err)}
+
+  /* ─── Resultados ─── */
+  .results{display:none;margin-top:20px}
+  .results.show{display:block}
+  .res-head{
+    background:var(--negro);color:#fff;padding:11px 16px;border-radius:10px 10px 0 0;
+    display:flex;justify-content:space-between;font-size:13px;font-weight:600;
+  }
+  .res-body{border:1px solid var(--linea);border-top:none;border-radius:0 0 10px 10px;padding:8px 0}
+  .res-proj{padding:8px 16px}
+  .res-proj .pj{font-weight:650;font-size:13.5px;margin:6px 0 8px}
+  .res-item{display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13px;border-top:1px solid #f4f4f4}
+  .res-item:first-of-type{border-top:none}
+  .res-item .who{font-weight:550}
+  .res-item .msg{color:var(--gris-t);font-size:12.5px;margin-left:4px}
+  .badge{font-size:11px;font-weight:700;padding:2px 9px;border-radius:6px}
+  .badge.ok{background:var(--okbg);color:var(--ok)}
+  .badge.err{background:var(--errbg);color:var(--err)}
+
+  .spin{
+    width:15px;height:15px;border:2px solid #ddd;border-top-color:var(--rojo);
+    border-radius:50%;display:inline-block;animation:sp .7s linear infinite;flex:none;
+  }
+  @keyframes sp{to{transform:rotate(360deg)}}
+
+  .footer{text-align:center;margin-top:50px;font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-in">
+      <img src="/logo-jaramillo.png" class="logo-jm" alt="Jaramillo Mora">
+      <div class="brand-divider"></div>
+      <img src="/logo-bim.jpg" class="logo-bim" alt="BIM">
+      <div>
+        <h1>Altas de personas · ACC / BIM 360</h1>
+        <div class="sub">Asignación de usuarios a proyectos</div>
+      </div>
+      <div class="topbar-right">
+        <a href="/reportes" class="nav-link">Reportes</a>
+        <span class="status"><span class="dot" id="bdot"></span><span id="btext">Verificando…</span></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="meta">
+    <div class="meta-in">
+      <span><b>Constructora Jaramillo Mora S.A.</b></span>
+      <span>Cuenta <code id="accId">—</code></span>
+      <span>Región <code id="regionTxt">—</code></span>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- STEP 1 -->
+    <div class="step">
+      <div class="stepno"><span class="n">1</span></div>
+      <div class="card">
+        <h2>Proyectos de destino <button class="btn" id="reloadProjects" style="font-size:12px;padding:5px 11px;margin-left:6px">↻ Actualizar</button></h2>
+        <p class="hint">Elige a qué proyectos se agregarán las personas. Los proyectos se cargan en tiempo real desde Autodesk.</p>
+        <div class="proj-toolbar">
+          <input type="text" id="projSearch" placeholder="Buscar proyecto o ciudad…">
+          <button class="btn" id="selAll">Seleccionar todo</button>
+          <button class="btn" id="selNone">Ninguno</button>
+          <span class="pill" id="projCount">0 seleccionados</span>
+        </div>
+        <div class="proj-list" id="projList"></div>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="step">
+      <div class="stepno"><span class="n">2</span></div>
+      <div class="card">
+        <h2>Personas</h2>
+        <p class="hint">Selecciona el empleado de la lista. La función es opcional.</p>
+        <table class="people">
+          <thead><tr>
+            <th style="width:55%">Empleado</th>
+            <th>Función</th><th class="x"></th>
+          </tr></thead>
+          <tbody id="peopleBody"></tbody>
+        </table>
+        <button class="btn addperson" id="addPerson">+ Agregar persona</button>
+        <div class="bulk-toggle" id="bulkToggle">▶ Pegar varios correos a la vez</div>
+        <div class="bulk-box" id="bulkBoxWrap">
+          <textarea id="bulkBox" placeholder="correo1@empresa.com, correo2@empresa.com&#10;correo3@empresa.com"></textarea>
+          <button class="btn addperson" id="bulkAdd" style="margin-top:8px">Agregar correos</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="step">
+      <div class="stepno"><span class="n">3</span></div>
+      <div class="card">
+        <h2>Revisar y enviar</h2>
+        <p class="hint">Los módulos (Docs, Coordinación, etc.) se asignan automáticamente según la función seleccionada.</p>
+        <div class="summary">
+          <span><b id="sumPeople">0</b> personas</span>
+          <span><b id="sumProj">0</b> proyectos</span>
+          <span><b id="sumTotal">0</b> asignaciones</span>
+        </div>
+        <div class="submitbar">
+          <button class="btn go" id="submitBtn" disabled>Agregar personas a los proyectos</button>
+          <span id="submitNote" class="hint" style="margin:0"></span>
+        </div>
+        <div id="formErr" class="err-text"></div>
+        <div class="warnline" id="credWarn" style="display:none"></div>
+
+        <div class="results" id="results">
+          <div class="res-head"><span>Resultados</span><span id="resCounter">0/0</span></div>
+          <div class="res-body" id="resBody"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">Constructora Jaramillo Mora S.A. · Herramienta interna de gestión BIM</div>
+  </div>
+
+<script>
+// ─── Estado global ────────────────────────────────────────────────────────────
+const state = {
+  projects: [],
+  selectedProjects: new Set(),
+  roles: [],
+  accountEmails: null,
+  employees: [],
+};
+let serverReady = false;
+
+// ─── Proyectos en tiempo real ─────────────────────────────────────────────────
+async function loadProjects() {
+  const list = document.getElementById("projList");
+  list.innerHTML = '<div class="proj-loading"><span class="spin" style="vertical-align:middle;margin-right:6px"></span>Cargando proyectos…</div>';
+  try {
+    const r = await fetch("/api/projects");
+    const d = await r.json();
+    if (!r.ok || !d.projects) throw new Error(d.detail || "Error al cargar proyectos");
+    state.projects = d.projects.sort((a,b) => a.name.localeCompare(b.name, 'es'));
+    renderProjects();
+    refresh();
+  } catch(e) {
+    list.innerHTML = `<div class="proj-loading" style="color:var(--err)">Error al cargar proyectos: ${escapeHtml(String(e.message))} <button class="reload-btn" onclick="loadProjects()">Reintentar</button></div>`;
+  }
+}
+
+const rolesLoaded = new Set();
+async function loadRoles(projectId) {
+  if (!projectId) {
+    const first = state.projects.find(p => p.status === 'active');
+    if (!first) return;
+    projectId = first.id;
+  }
+  if (rolesLoaded.has(projectId)) return;
+  rolesLoaded.add(projectId);
+  try {
+    const r = await fetch(`/api/roles?projectId=${encodeURIComponent(projectId)}`);
+    const d = await r.json();
+    if (r.ok && Array.isArray(d.roles) && d.roles.length > 0) {
+      const existing = new Set(state.roles.map(x => x.id));
+      for (const role of d.roles) if (!existing.has(role.id)) state.roles.push(role);
+      state.roles.sort((a,b) => a.name.localeCompare(b.name, 'es'));
+    }
+  } catch(e) {
+    console.warn("No se pudieron cargar roles:", e.message);
+  }
+}
+
+function wireEmployeeSearch(tr) {
+  const searchInput = tr.querySelector(".pe-search");
+  const hiddenInput = tr.querySelector(".pe");
+  const dropdown = tr.querySelector(".emp-dropdown");
+  function showDropdown(filter) {
+    const f = filter.trim().toLowerCase();
+    const matches = state.employees.filter(e =>
+      !f || (e.name||'').toLowerCase().includes(f) || e.email.toLowerCase().includes(f)
+    ).slice(0, 50);
+    if (!matches.length) {
+      dropdown.innerHTML = '<div class="emp-opt" style="color:var(--muted);font-style:italic">Sin coincidencias</div>';
+    } else {
+      dropdown.innerHTML = matches.map(e =>
+        `<div class="emp-opt" data-email="${escapeHtml(e.email)}" data-name="${escapeHtml(e.name||'')}">`+
+          `<span class="emp-name">${escapeHtml(e.name||e.email)}</span>`+
+          `<span class="emp-mail">${escapeHtml(e.email)}</span>`+
+        `</div>`).join("");
+    }
+    dropdown.style.display = "block";
+    dropdown.querySelectorAll(".emp-opt[data-email]").forEach(opt => {
+      opt.addEventListener("mousedown", ev => {
+        ev.preventDefault();
+        hiddenInput.value = opt.dataset.email;
+        searchInput.value = (opt.dataset.name ? opt.dataset.name + ' · ' : '') + opt.dataset.email;
+        dropdown.style.display = "none";
+        validateEmailRow(hiddenInput);
+        refresh();
+      });
+    });
+  }
+  searchInput.addEventListener("focus", () => showDropdown(searchInput.value));
+  searchInput.addEventListener("input", () => { hiddenInput.value = ""; showDropdown(searchInput.value); validateEmailRow(hiddenInput); refresh(); });
+  searchInput.addEventListener("blur", () => setTimeout(() => { dropdown.style.display = "none"; }, 150));
+}
+
+function wireRoleSearch(tr) {
+  const searchInput = tr.querySelector(".pr-search");
+  const hiddenInput = tr.querySelector(".pr");
+  const dropdown = tr.querySelector(".role-dropdown");
+  function showDropdown(filter) {
+    const f = filter.trim().toLowerCase();
+    const matches = state.roles.filter(r => !f || r.name.toLowerCase().includes(f)).slice(0, 40);
+    dropdown.innerHTML = '<div class="role-opt role-clear">— Sin función —</div>' +
+      matches.map(r => `<div class="role-opt" data-id="${escapeHtml(r.id)}" data-name="${escapeHtml(r.name)}">${escapeHtml(r.name)}</div>`).join("");
+    dropdown.style.display = matches.length || !f ? "block" : "none";
+    dropdown.querySelectorAll(".role-opt").forEach(opt => {
+      opt.addEventListener("mousedown", e => {
+        e.preventDefault();
+        if (opt.classList.contains("role-clear")) { hiddenInput.value = ""; searchInput.value = ""; }
+        else { hiddenInput.value = opt.dataset.id; searchInput.value = opt.dataset.name; }
+        dropdown.style.display = "none";
+        refresh();
+      });
+    });
+  }
+  searchInput.addEventListener("focus", () => showDropdown(searchInput.value));
+  searchInput.addEventListener("input", () => { hiddenInput.value = ""; showDropdown(searchInput.value); });
+  searchInput.addEventListener("blur", () => setTimeout(() => { dropdown.style.display = "none"; }, 150));
+}
+
+document.getElementById("reloadProjects").addEventListener("click", loadProjects);
+
+async function loadAccountUsers() {
+  try {
+    const r = await fetch('/api/account-users');
+    const d = await r.json();
+    if (r.ok && Array.isArray(d.users)) {
+      state.employees = d.users.sort((a,b) => (a.name||a.email).localeCompare(b.name||b.email, 'es'));
+      state.accountEmails = new Set(d.users.map(u => u.email.toLowerCase()));
+    }
+  } catch(e) {
+    console.warn('No se pudo cargar lista de usuarios:', e.message);
+    state.accountEmails = new Set();
+    state.employees = [];
+  }
+  document.querySelectorAll('.pe').forEach(validateEmailRow);
+}
+
+function validateEmailRow(input) {
+  const tr = input.closest('tr');
+  if (!tr) return;
+  const email = input.value.trim().toLowerCase();
+  const badge = tr.querySelector('.user-status');
+  if (!badge) return;
+  input.dataset.blocked = '';
+  if (!email || !validEmail(email)) { badge.style.display = 'none'; badge.textContent = ''; return; }
+  badge.style.display = 'inline-block';
+  badge.className = 'user-status';
+  if (state.accountEmails === null) {
+    badge.classList.add('us-loading'); badge.textContent = '… verificando';
+  } else if (state.accountEmails.has(email)) {
+    badge.classList.add('us-ok'); badge.textContent = '✓ En la base de datos';
+  } else {
+    badge.classList.add('us-block'); badge.textContent = '✗ No está en la base de datos — no se puede enviar';
+    input.dataset.blocked = '1';
+  }
+  refresh();
+}
+
+// ─── Lista de proyectos ───────────────────────────────────────────────────────
+const projListEl = document.getElementById("projList");
+function renderProjects(filter="") {
+  const f = filter.trim().toLowerCase();
+  projListEl.innerHTML = "";
+  const items = state.projects.filter(p =>
+    p.status === 'active' &&
+    (!f || p.name.toLowerCase().includes(f) || (p.city||"").toLowerCase().includes(f)));
+  if (!items.length) { projListEl.innerHTML = '<div class="proj-loading">Sin coincidencias.</div>'; return; }
+  for (const p of items) {
+    const sel = state.selectedProjects.has(p.id);
+    const row = document.createElement("label");
+    row.className = "proj" + (sel?" sel":"");
+    row.innerHTML = '<input type="checkbox" '+(sel?"checked":"")+'><span class="pname"></span><span class="pcity"></span>';
+    row.querySelector(".pname").textContent = p.name;
+    row.querySelector(".pcity").textContent = p.city || "—";
+    row.querySelector("input").addEventListener("change", e => {
+      if (e.target.checked) { state.selectedProjects.add(p.id); loadRoles(p.id); }
+      else state.selectedProjects.delete(p.id);
+      row.classList.toggle("sel", e.target.checked);
+      document.querySelectorAll('.pe').forEach(validateEmailRow);
+      refresh();
+    });
+    projListEl.appendChild(row);
+  }
+}
+
+document.getElementById("projSearch").addEventListener("input", e => renderProjects(e.target.value));
+document.getElementById("selAll").addEventListener("click", () => {
+  const f = document.getElementById("projSearch").value.trim().toLowerCase();
+  state.projects.filter(p => !f || p.name.toLowerCase().includes(f) || (p.city||"").toLowerCase().includes(f))
+    .forEach(p => { state.selectedProjects.add(p.id); loadRoles(p.id); });
+  renderProjects(document.getElementById("projSearch").value); refresh();
+});
+document.getElementById("selNone").addEventListener("click", () => {
+  state.selectedProjects.clear();
+  renderProjects(document.getElementById("projSearch").value); refresh();
+});
+
+// ─── Personas ─────────────────────────────────────────────────────────────────
+const peopleBody = document.getElementById("peopleBody");
+let pid = 0;
+function addPerson(data={}) {
+  const id = ++pid;
+  const tr = document.createElement("tr");
+  tr.dataset.id = id;
+  tr.innerHTML =
+    '<td style="vertical-align:top"><div class="emp-wrap">'+
+      '<input type="text" class="pe-search" placeholder="Buscar empleado…" autocomplete="off">'+
+      '<input type="hidden" class="pe">'+
+      '<div class="emp-dropdown" style="display:none"></div>'+
+    '</div><span class="user-status" style="display:none"></span></td>'+
+    '<td class="role-cell"><div class="role-wrap">'+
+      '<input type="text" class="pr-search" placeholder="Buscar función…" autocomplete="off">'+
+      '<input type="hidden" class="pr">'+
+      '<div class="role-dropdown" style="display:none"></div>'+
+    '</div></td>'+
+    '<td class="x"><button class="iconbtn" title="Quitar">×</button></td>';
+  tr.querySelector(".iconbtn").addEventListener("click", () => { tr.remove(); refresh(); });
+  wireEmployeeSearch(tr);
+  wireRoleSearch(tr);
+  peopleBody.appendChild(tr);
+  if (data.email) {
+    const emp = state.employees.find(e => e.email.toLowerCase() === data.email.toLowerCase());
+    tr.querySelector(".pe").value = data.email;
+    tr.querySelector(".pe-search").value = emp ? (emp.name + ' · ' + emp.email) : data.email;
+    validateEmailRow(tr.querySelector(".pe"));
+  }
+  refresh();
+}
+
+document.getElementById("addPerson").addEventListener("click", () => addPerson());
+document.getElementById("bulkToggle").addEventListener("click", () => {
+  document.getElementById("bulkBoxWrap").classList.toggle("show");
+});
+document.getElementById("bulkAdd").addEventListener("click", () => {
+  const raw = document.getElementById("bulkBox").value;
+  const emails = raw.split(/[\s,;]+/).map(s=>s.trim()).filter(Boolean);
+  emails.forEach(em => addPerson({email:em}));
+  document.getElementById("bulkBox").value = "";
+});
+
+function collectPeople() {
+  return [...peopleBody.querySelectorAll("tr")].map(tr => ({
+    email:   tr.querySelector(".pe").value.trim(),
+    roleId:  tr.querySelector(".pr").value
+  })).filter(p => p.email);
+}
+
+// ─── Validación ───────────────────────────────────────────────────────────────
+function refresh() {
+  const people = collectPeople();
+  const nProj = state.selectedProjects.size;
+  document.getElementById("sumPeople").textContent = people.length;
+  document.getElementById("sumProj").textContent = nProj;
+  document.getElementById("sumTotal").textContent = people.length * nProj;
+  document.getElementById("projCount").textContent = nProj + " seleccionados";
+  const badEmail = [...peopleBody.querySelectorAll(".pe")].some(i => i.value.trim() && !validEmail(i.value.trim()));
+  const blockedBim = [...peopleBody.querySelectorAll(".pe")].some(i => i.dataset.blocked === '1');
+  const ready = people.length>0 && nProj>0 && !badEmail && !blockedBim && serverReady;
+  document.getElementById("submitBtn").disabled = !ready;
+  const note = document.getElementById("submitNote");
+  if (badEmail) note.textContent = "Revisa los correos: hay alguno con formato inválido.";
+  else if (blockedBim) note.textContent = "Hay empleados que no están en la base de datos. No se puede enviar la solicitud.";
+  else if (!people.length) note.textContent = "Agrega al menos una persona.";
+  else if (!nProj) note.textContent = "Selecciona al menos un proyecto.";
+  else if (!serverReady) note.textContent = "El servidor no está listo (ver estado arriba).";
+  else note.textContent = "";
+}
+
+function validEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// ─── Envío ────────────────────────────────────────────────────────────────────
+document.getElementById("submitBtn").addEventListener("click", submitAll);
+async function submitAll() {
+  const people = collectPeople();
+  const projIds = [...state.selectedProjects];
+  const projById = Object.fromEntries(state.projects.map(p => [p.id, p]));
+  document.getElementById("formErr").textContent = "";
+  const btn = document.getElementById("submitBtn"); btn.disabled = true;
+  const res = document.getElementById("results"); res.classList.add("show");
+  const body = document.getElementById("resBody"); body.innerHTML = "";
+  let done=0, total=projIds.length*people.length, okCount=0;
+  const counter = document.getElementById("resCounter");
+  counter.textContent = `0/${total}`;
+
+  for (const projId of projIds) {
+    const proj = projById[projId];
+    const block = document.createElement("div"); block.className = "res-proj";
+    const title = document.createElement("div"); title.className = "pj";
+    const platform = (proj?.platform || 'acc').toLowerCase();
+    title.textContent = (proj?.name || projId) + (platform === 'bim360' ? ' [BIM 360]' : ' [ACC]');
+    block.appendChild(title);
+    const rows = {};
+    for (const person of people) {
+      const r = document.createElement("div"); r.className = "res-item";
+      r.innerHTML = '<span class="spin"></span><span class="who"></span><span class="msg"></span>';
+      r.querySelector(".who").textContent = person.email;
+      block.appendChild(r); rows[person.email] = r;
+    }
+    body.appendChild(block);
+
+    for (const person of people) {
+      const r = rows[person.email];
+      const userPayload = { email: person.email };
+      if (person.roleId) userPayload.roleIds = [person.roleId];
+      try {
+        const resp = await fetch("/api/add-user", {
+          method: "POST", headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({ projectId: projId, user: userPayload, projectName: (proj?.name || ''), ejecutor: '' })
+        });
+        const data = await resp.json().catch(() => ({}));
+        const cell = r.querySelector(".spin");
+        if (resp.ok) {
+          okCount++;
+          cell.outerHTML = '<span class="badge ok">OK</span>';
+          r.querySelector(".msg").textContent = data.status ? ("estado: "+data.status) : "agregado";
+        } else {
+          cell.outerHTML = '<span class="badge err">Error</span>';
+          r.querySelector(".msg").textContent = (data.detail||data.error||("HTTP "+resp.status)).toString().slice(0,200);
+        }
+      } catch(err) {
+        r.querySelector(".spin").outerHTML = '<span class="badge err">Error</span>';
+        r.querySelector(".msg").textContent = "Sin conexión con el servidor.";
+      }
+      done++; counter.textContent = `${done}/${total}`;
+    }
+  }
+  counter.textContent = `${okCount}/${total} con éxito`;
+  btn.disabled = false; refresh();
+}
+
+// ─── Estado del servidor ──────────────────────────────────────────────────────
+async function checkServer() {
+  const dot = document.getElementById("bdot"), txt = document.getElementById("btext");
+  const warn = document.getElementById("credWarn");
+  try {
+    const r = await fetch("/api/health"); const d = await r.json();
+    document.getElementById("accId").textContent = d.accountId || "—";
+    document.getElementById("regionTxt").textContent = d.region || "—";
+    if (d.ok && d.hasCreds) {
+      serverReady = true; dot.className = "dot ok"; txt.textContent = "Servidor conectado";
+      warn.style.display = "none";
+      await loadProjects(); loadRoles(); loadAccountUsers();
+    } else if (d.ok && !d.hasCreds) {
+      serverReady = false; dot.className = "dot warn"; txt.textContent = "Sin credenciales";
+      warn.style.display = "block";
+      warn.textContent = "Falta configurar APS_CLIENT_ID y APS_CLIENT_SECRET en las variables de entorno de Vercel.";
+    } else throw 0;
+  } catch(e) {
+    serverReady = false; dot.className = "dot bad"; txt.textContent = "Sin conexión";
+    warn.style.display = "block";
+    warn.textContent = "No se pudo conectar con el servidor.";
+  }
+  refresh();
+}
+
+// ─── Arranque ─────────────────────────────────────────────────────────────────
+addPerson(); addPerson();
+checkServer();
+refresh();
+</script>
+</body>
+</html>

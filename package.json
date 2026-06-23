@@ -1,0 +1,13 @@
+{
+  "name": "jm-altas-acc",
+  "version": "1.0.0",
+  "description": "Altas de personas en ACC / BIM 360 — Constructora Jaramillo Mora",
+  "private": true,
+  "scripts": {
+    "dev": "vercel dev",
+    "start": "vercel dev"
+  },
+  "dependencies": {
+    "@vercel/postgres": "^0.9.0"
+  }
+}
